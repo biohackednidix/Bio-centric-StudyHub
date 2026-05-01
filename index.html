@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub · HackedBio Edition</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Inter',sans-serif}
+  .mono{font-family:'JetBrains Mono',monospace!important}
+  @keyframes dnaScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  .dna-anim{animation:dnaScroll 28s linear infinite;white-space:nowrap}
+  .hide{display:none!important}
+  input,select,textarea{outline:none}
+  input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px #6ee7b7;border-color:#10b981!important}
+  .progress-bar{transition:width 0.4s ease}
+  .topic-dot{transition:all 0.15s}
+  .topic-dot:hover{transform:scale(1.15)}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
+  ::-webkit-scrollbar-track{background:#f1f5f9}
+  .tab-active-d{border-bottom:2px solid #10b981!important;color:#059669!important;font-weight:600!important}
+  .tab-active-m{color:#059669!important}
+  .tab-active-m span.label{color:#059669!important}
+  .card-hover{transition:box-shadow 0.15s,transform 0.15s}
+  .card-hover:hover{box-shadow:0 4px 16px rgba(0,0,0,0.07);transform:translateY(-1px)}
+  @media(max-width:640px){main{padding-bottom:80px}}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-700 min-h-screen">
+
+<!-- DNA Banner -->
+<div class="bg-emerald-950 overflow-hidden" style="height:28px;display:flex;align-items:center">
+  <div class="dna-anim text-emerald-400 opacity-40 mono" style="font-size:11px;letter-spacing:3px">
+    <span>ATGCGATCGAATCGCGTATCGG · BLAST · RNA-seq · GATCGATCGAATCGATCG · AlphaFold · FASTA · CRISPR · NGS · Biopython · GATK · DESeq2 · UniProt · scRNA-seq · UMAP · &nbsp;</span>
+    <span>ATGCGATCGAATCGCGTATCGG · BLAST · RNA-seq · GATCGATCGAATCGATCG · AlphaFold · FASTA · CRISPR · NGS · Biopython · GATK · DESeq2 · UniProt · scRNA-seq · UMAP · &nbsp;</span>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-30 flex items-center justify-between">
+  <div>
+    <div class="flex items-center gap-2">
+      <span style="font-size:22px">🧬</span>
+      <span class="font-bold text-lg text-slate-800">StudyHub</span>
+      <span class="mono text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 hidden sm:inline">HackedBio Edition</span>
+    </div>
+    <p class="text-xs text-slate-400 mt-0.5 hidden sm:block">Your personal science command center</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <span id="save-ind" class="hide mono text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200">✓ saved</span>
+    <button onclick="openSubjMgr()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 transition">⚙ Subjects</button>
+    <button onclick="exportData()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 transition hidden sm:inline">⬇ Export</button>
+  </div>
+</header>
+
+<!-- Desktop Tabs -->
+<nav id="desktop-nav" class="bg-white border-b border-slate-200 sticky z-20 hidden md:flex px-4 overflow-x-auto" style="top:65px">
+  <button onclick="sw('tasks')" id="dt-tasks" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">📋 Tasks</button>
+  <button onclick="sw('planner')" id="dt-planner" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">📅 Planner</button>
+  <button onclick="sw('pomodoro')" id="dt-pomodoro" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">🍅 Pomodoro</button>
+  <button onclick="sw('habits')" id="dt-habits" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">📊 Habits</button>
+  <button onclick="sw('books')" id="dt-books" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">📚 Books</button>
+  <button onclick="sw('bioinfo')" id="dt-bioinfo" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">🧬 Bioinfo</button>
+  <button onclick="sw('aiml')" id="dt-aiml" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">🤖 AI / ML</button>
+  <button onclick="sw('ds')" id="dt-ds" class="tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition">📈 Data Sci</button>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-5xl mx-auto px-3 py-4 md:px-6 md:py-6">
+  <div id="panel-tasks"></div>
+  <div id="panel-planner" class="hide"></div>
+  <div id="panel-pomodoro" class="hide"></div>
+  <div id="panel-habits" class="hide"></div>
+  <div id="panel-books" class="hide"></div>
+  <div id="panel-bioinfo" class="hide"></div>
+  <div id="panel-aiml" class="hide"></div>
+  <div id="panel-ds" class="hide"></div>
+</main>
+
+<!-- Mobile Bottom Nav -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 flex overflow-x-auto" style="padding-bottom:env(safe-area-inset-bottom,0)">
+  <button onclick="sw('tasks')" id="mt-tasks" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">📋</span><span class="label text-xs mt-0.5">Tasks</span>
+  </button>
+  <button onclick="sw('planner')" id="mt-planner" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">📅</span><span class="label text-xs mt-0.5">Plan</span>
+  </button>
+  <button onclick="sw('pomodoro')" id="mt-pomodoro" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">🍅</span><span class="label text-xs mt-0.5">Timer</span>
+  </button>
+  <button onclick="sw('habits')" id="mt-habits" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">📊</span><span class="label text-xs mt-0.5">Habits</span>
+  </button>
+  <button onclick="sw('books')" id="mt-books" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">📚</span><span class="label text-xs mt-0.5">Books</span>
+  </button>
+  <button onclick="sw('bioinfo')" id="mt-bioinfo" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">🧬</span><span class="label text-xs mt-0.5">Bio</span>
+  </button>
+  <button onclick="sw('aiml')" id="mt-aiml" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">🤖</span><span class="label text-xs mt-0.5">AI/ML</span>
+  </button>
+  <button onclick="sw('ds')" id="mt-ds" class="tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition" style="min-width:64px">
+    <span style="font-size:20px">📈</span><span class="label text-xs mt-0.5">DS</span>
+  </button>
+</nav>
+
+<!-- Subject Manager Modal -->
+<div id="subj-modal" class="hide fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold text-lg">⚙ Manage Subjects</h2>
+      <button onclick="closeSubjMgr()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+    </div>
+    <p class="text-xs text-slate-500 mb-4">Default subjects cannot be deleted. Custom subjects can be removed.</p>
+    <div id="subj-list"></div>
+    <div class="border-t border-slate-100 pt-4 mt-4">
+      <p class="text-sm font-semibold text-slate-700 mb-3">+ Add new subject</p>
+      <div class="flex flex-wrap gap-2 items-end">
+        <div class="flex-1 min-w-32">
+          <label class="text-xs text-slate-500 mb-1 block">Subject name</label>
+          <input type="text" id="new-sn" placeholder="e.g. Structural Biology" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2" onkeydown="if(event.key==='Enter')addSubject()">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1 block">Color</label>
+          <input type="color" id="new-sc" value="#10b981" class="h-9 w-12 rounded-lg border border-slate-200 cursor-pointer p-0.5">
+        </div>
+        <button onclick="addSubject()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTS & DEFAULTS
+// ═══════════════════════════════════════════
+const KEY = 'studyhub_v2';
+// PASTE YOUR CLOUD API LINK BELOW:
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGs-KGyTb2k2XXx63mIdrVZ1v2d6jb3qKJAQS4wCKaKWXI6SafBm_UsPsj4EkLZxOADg/exec';
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const CIRC = 2 * Math.PI * 84;
+const ALL_TABS = ['tasks','planner','pomodoro','habits','books','bioinfo','aiml','ds'];
+
+const DEF_SUBJ = [
+  {id:'bio',   label:'Bioinformatics', col:'#059669', bg:'#ecfdf5', border:'#6ee7b7'},
+  {id:'aiml',  label:'AI / ML',        col:'#7c3aed', bg:'#f5f3ff', border:'#c4b5fd'},
+  {id:'ds',    label:'Data Science',   col:'#2563eb', bg:'#eff6ff', border:'#93c5fd'},
+  {id:'comm',  label:'Communication',  col:'#dc2626', bg:'#fef2f2', border:'#fca5a5'},
+  {id:'inter', label:'Interpersonal',  col:'#db2777', bg:'#fdf2f8', border:'#f9a8d4'},
+  {id:'de',    label:'German',         col:'#d97706', bg:'#fffbeb', border:'#fcd34d'},
+];
+
+const DEF_BIOINFO = [
+  {cat:'Foundations', topics:['Central Dogma & Molecular Biology','DNA / RNA / Protein structure','Gene expression & regulation','Population genetics basics']},
+  {cat:'Sequence Analysis', topics:['Pairwise alignment (Needleman-Wunsch / Smith-Waterman)','Multiple Sequence Alignment (Clustal / MUSCLE)','BLAST & sequence search','Hidden Markov Models (HMMs)','Phylogenetic tree construction']},
+  {cat:'Genomics & Transcriptomics', topics:['NGS technologies overview','Genome assembly (de novo & reference-guided)','Read mapping (Bowtie2 / STAR / BWA)','Variant calling (GATK / FreeBayes)','RNA-seq analysis pipeline','DEG analysis (DESeq2 / edgeR)']},
+  {cat:'Proteomics & Structure', topics:['Mass spectrometry basics','Protein structure prediction (AlphaFold2)','Protein-protein interactions','Molecular docking basics','PDB database navigation']},
+  {cat:'Computational Tools', topics:['Python & Biopython','R & Bioconductor','SAMtools / bedtools / VCFtools','Linux CLI for bioinformatics','Git & GitHub for science','Snakemake / Nextflow workflows']},
+  {cat:'ML in Bioinformatics', topics:['Feature engineering for biological data','Sequence classification (CNN / RNN)','Protein function prediction','Drug-target interaction ML','scRNA-seq analysis (Seurat / Scanpy)','Dimensionality reduction (PCA / UMAP / t-SNE)']},
+  {cat:'Key Databases', topics:['NCBI / GenBank / RefSeq','Ensembl genome browser','UniProt / Swiss-Prot','PDB — Protein Data Bank','STRING protein interactions','GEO — Gene Expression Omnibus']},
+];
+
+const DEF_AIML = [
+  {cat:'ML Foundations', topics:['Supervised & Unsupervised Learning','Bias-Variance tradeoff','Cross-validation & evaluation metrics','Feature engineering & selection','Regularization (L1 / L2 / Dropout)']},
+  {cat:'Deep Learning', topics:['Neural network basics & backprop','CNNs for image and sequence data','RNNs & LSTMs','Transformers & Attention mechanism','Autoencoders & Variational AEs','GANs — Generative Adversarial Networks']},
+  {cat:'Bio-ML Applications', topics:['Sequence classification with DL','Protein function prediction','Drug-target interaction prediction','scRNA-seq clustering & annotation','Graph Neural Networks for proteins','Genomic variant pathogenicity ML']},
+  {cat:'Tools & Frameworks', topics:['TensorFlow & Keras','PyTorch fundamentals','scikit-learn pipelines','Hugging Face Transformers','Weights & Biases (wandb)','ONNX & model deployment']},
+  {cat:'MLOps & Best Practices', topics:['Reproducible ML experiments','Hyperparameter tuning (Optuna / Ray)','Model interpretability (SHAP / LIME)','Containerisation (Docker)','CI/CD for ML pipelines']},
+];
+
+const DEF_DS = [
+  {cat:'Core Statistics', topics:['Descriptive statistics & distributions','Hypothesis testing (t-test, ANOVA, chi-sq)','Bayesian statistics','Multiple testing correction (Bonferroni / FDR)','Power analysis & sample size']},
+  {cat:'Data Wrangling', topics:['Pandas & NumPy for data manipulation','Data cleaning & handling missing values','Merging, reshaping & pivoting data','Regular expressions for text data','SQL fundamentals for biologists']},
+  {cat:'Visualisation', topics:['Matplotlib & Seaborn','Plotly & interactive plots','ggplot2 in R','Dashboard design principles','Dimensionality reduction visualisation']},
+  {cat:'Biological Data Science', topics:['Single-cell data analysis workflow','Multi-omics data integration','Survival analysis (Kaplan-Meier)','Biological network analysis','Spatial transcriptomics']},
+  {cat:'Big Data & Workflow', topics:['Cloud platforms overview (AWS / GCP)','Dask for large biological datasets','Database design for biological data','Pipeline optimisation & profiling','Version control for data science']},
+];
+
+const BOOK_GENRES = ['Bioinformatics','Genomics','Computational Biology','ML / AI','Data Science','Programming','Cell & Molecular Biology','Statistics','Research Methods','Science Communication','Language','Other'];
+const BOOK_STATUS = [{id:'to-read',label:'To Read',col:'#64748b',bg:'#f8fafc'},{id:'reading',label:'Reading',col:'#059669',bg:'#ecfdf5'},{id:'done',label:'Done ✓',col:'#16a34a',bg:'#f0fdf4'}];
+
+const TOPIC_CFG = {
+  bioinfo:{sKey:'bioinfoSt', tKey:'bioinfoTopics', label:'Bioinformatics', emoji:'🧬', col:'#059669', bg:'#ecfdf5', defCount:DEF_BIOINFO.length},
+  aiml:   {sKey:'aimlSt',    tKey:'aimlTopics',    label:'AI / ML',        emoji:'🤖', col:'#7c3aed', bg:'#f5f3ff', defCount:DEF_AIML.length},
+  ds:     {sKey:'dsSt',      tKey:'dsTopics',       label:'Data Science',   emoji:'📈', col:'#2563eb', bg:'#eff6ff', defCount:DEF_DS.length},
+};
+
+// ═══════════════════════════════════════════
+//  STATE & STORAGE (UPDATED WITH CLOUD SYNC)
+// ═══════════════════════════════════════════
+let S, tmr=null, selDay=null, editBook=null, curTab='tasks';
+let taskFilter='', bookSF='', bookGF='';
+let saveTimeout = null;
+
+function defState(){
+  return {
+    subjects:JSON.parse(JSON.stringify(DEF_SUBJ)),
+    tasks:[], planner:{Mon:[],Tue:[],Wed:[],Thu:[],Fri:[],Sat:[],Sun:[]},
+    habits:[], compl:{}, books:[],
+    bioinfoSt:{}, bioinfoTopics:JSON.parse(JSON.stringify(DEF_BIOINFO)),
+    aimlSt:{},    aimlTopics:JSON.parse(JSON.stringify(DEF_AIML)),
+    dsSt:{},      dsTopics:JSON.parse(JSON.stringify(DEF_DS)),
+    pomo:{work:25,brk:5,sessions:0,mode:'work',rem:1500,running:false},
+  };
+}
+
+function loadLocalState(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw)return defState();
+    const s=JSON.parse(raw), d=defState();
+    return {...d,...s,pomo:{...d.pomo,...(s.pomo||{})},planner:{...d.planner,...(s.planner||{})}};
+  }catch(e){return defState();}
+}
+
+async function loadCloudState() {
+  const ind = document.getElementById('save-ind');
+  ind.textContent = "↻ loading cloud...";
+  ind.classList.remove('hide');
+
+  try {
+    const response = await fetch(SCRIPT_URL);
+    const raw = await response.text();
+
+    if (raw && raw.length > 5) {
+      const s = JSON.parse(raw);
+      const d = defState();
+      S = {...d,...s,pomo:{...d.pomo,...(s.pomo||{})},planner:{...d.planner,...(s.planner||{})}};
+    } else {
+      S = loadLocalState(); // Fallback to local if cloud is empty
+    }
+  } catch (error) {
+    console.error("Cloud load failed:", error);
+    S = loadLocalState(); // Fallback to local on error
+  }
+
+  ind.textContent = "✓ synced";
+  setTimeout(()=>ind.classList.add('hide'), 1500);
+  sw('tasks'); // Render UI
+}
+
+function save(){
+  try{
+    S.pomo.running = false;
+    
+    // 1. Always save locally as a backup instantly
+    localStorage.setItem(KEY, JSON.stringify(S));
+
+    // 2. Save to Google Cloud (Debounced to prevent spamming Google API)
+    if (SCRIPT_URL !== 'YOUR_GOOGLE_WEB_APP_URL_HERE') {
+      const ind = document.getElementById('save-ind');
+      ind.textContent = "↻ saving cloud...";
+      ind.classList.remove('hide');
+
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(S)
+        })
+        .then(() => {
+          ind.textContent = "☁ cloud saved";
+          setTimeout(()=>ind.classList.add('hide'), 1500);
+        })
+        .catch(e => {
+          ind.textContent = "⚠ cloud error";
+          setTimeout(()=>ind.classList.add('hide'), 2000);
+        });
+      }, 1500); // Waits 1.5s after you stop making changes to upload
+    } else {
+      const ind=document.getElementById('save-ind');
+      ind.textContent = "✓ saved locally";
+      ind.classList.remove('hide');
+      setTimeout(()=>ind.classList.add('hide'),1500);
+    }
+  }catch(e){alert('⚠ Save error: '+e.message);}
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='studyhub_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+const gs=id=>S.subjects.find(s=>s.id===id)||S.subjects[0];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+function hexToRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+
+function badge(sid){
+  const s=gs(sid);
+  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style="background:${s.bg};color:${s.col};border:1px solid ${s.border}">${s.label}</span>`;
+}
+function sopts(sel=''){
+  return S.subjects.map(s=>`<option value="${s.id}"${s.id===sel?' selected':''}>${s.label}</option>`).join('');
+}
+function inp(cls=''){
+  return `w-full text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white hover:border-slate-300 transition ${cls}`;
+}
+function card(body,extra=''){
+  return `<div class="bg-white rounded-xl border border-slate-200 p-4 mb-3 shadow-sm card-hover ${extra}">${body}</div>`;
+}
+function secTitle(t,n=''){
+  return `<div class="flex items-center gap-2 mb-4"><h2 class="font-bold text-slate-700 text-base">${t}</h2>${n!==''?`<span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">${n}</span>`:''}</div>`;
+}
+function wkDates(){
+  const t=new Date(),d=t.getDay(),m=new Date(t);
+  m.setDate(t.getDate()-(d===0?6:d-1));
+  return Array.from({length:7},(_,i)=>{const x=new Date(m);x.setDate(m.getDate()+i);return x.toISOString().slice(0,10);});
+}
+
+// ═══════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════
+function sw(tab){
+  curTab=tab;
+  ALL_TABS.forEach(t=>{
+    const p=document.getElementById('panel-'+t);
+    if(p)p.className=t===tab?'':'hide';
+    const dt=document.getElementById('dt-'+t);
+    if(dt){
+      dt.className=t===tab
+        ?'tab-btn-d tab-active-d flex-shrink-0 px-4 py-3 text-sm border-b-2 transition'
+        :'tab-btn-d flex-shrink-0 px-4 py-3 text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition';
+    }
+    const mt=document.getElementById('mt-'+t);
+    if(mt){
+      mt.className=t===tab
+        ?'tab-btn-m tab-active-m flex flex-col items-center flex-shrink-0 px-3 py-2 transition'
+        :'tab-btn-m flex flex-col items-center flex-shrink-0 px-3 py-2 text-slate-400 transition';
+    }
+  });
+  if(S) renderTab(tab); // Only render if data is loaded
+}
+function renderTab(t){
+  if(t==='tasks')rTasks();
+  else if(t==='planner')rPlanner();
+  else if(t==='pomodoro')rPomodoro();
+  else if(t==='habits')rHabits();
+  else if(t==='books')rBooks();
+  else if(t==='bioinfo'||t==='aiml'||t==='ds')rTopics(t);
+}
+
+// ═══════════════════════════════════════════
+//  SUBJECTS
+// ═══════════════════════════════════════════
+function openSubjMgr(){document.getElementById('subj-modal').classList.remove('hide');renderSubjList();}
+function closeSubjMgr(){document.getElementById('subj-modal').classList.add('hide');renderTab(curTab);}
+function renderSubjList(){
+  document.getElementById('subj-list').innerHTML=S.subjects.map((s,i)=>`
+    <div class="flex items-center gap-3 mb-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+      <span class="w-5 h-5 rounded-full flex-shrink-0" style="background:${s.col}"></span>
+      <span class="flex-1 text-sm font-medium text-slate-700">${s.label}</span>
+      ${i<DEF_SUBJ.length
+        ?`<span class="text-xs text-slate-400 italic">default</span>`
+        :`<button onclick="delSubject(${i})" class="text-xs text-red-400 hover:text-red-600 border border-red-200 px-2 py-0.5 rounded-lg transition">delete</button>`}
+    </div>`).join('');
+}
+function addSubject(){
+  const name=document.getElementById('new-sn').value.trim();if(!name)return;
+  const col=document.getElementById('new-sc').value;
+  S.subjects.push({id:'c_'+uid(),label:name,col,bg:hexToRgba(col,0.12),border:hexToRgba(col,0.4)});
+  save();renderSubjList();document.getElementById('new-sn').value='';
+}
+function delSubject(i){if(!confirm('Delete this subject?'))return;S.subjects.splice(i,1);save();renderSubjList();}
+
+// ═══════════════════════════════════════════
+//  TASKS
+// ═══════════════════════════════════════════
+function rTasks(){
+  const filtered=taskFilter?S.tasks.filter(t=>t.subject===taskFilter):S.tasks;
+  const todo=filtered.filter(t=>!t.done),done=filtered.filter(t=>t.done);
+  document.getElementById('panel-tasks').innerHTML=`
+    ${secTitle('Task Manager',S.tasks.length+' total')}
+    ${card(`
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="sm:col-span-2">
+          <label class="text-xs text-slate-500 mb-1 block">Task title</label>
+          <input type="text" id="ti" placeholder="What to study next..." class="${inp()}" onkeydown="if(event.key==='Enter')addTask()">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1 block">Subject</label>
+          <select id="ts" class="${inp()}">${sopts()}</select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1 block">Priority</label>
+          <select id="tp" class="${inp()}"><option>Low</option><option selected>Medium</option><option>High</option></select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1 block">Due date</label>
+          <input type="date" id="td" class="${inp()}">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 mb-1 block">Notes</label>
+          <input type="text" id="tn" placeholder="Optional note..." class="${inp()}">
+        </div>
+        <div class="sm:col-span-2">
+          <button onclick="addTask()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition">+ Add Task</button>
+        </div>
+      </div>
+    `,'border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white')}
+    <div class="flex flex-wrap items-center gap-2 mb-3">
+      <select class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white" onchange="taskFilter=this.value;rTasks()">
+        <option value="">All subjects</option>${sopts(taskFilter)}
+      </select>
+      <div class="ml-auto flex gap-4 text-sm">
+        <span><span class="font-bold text-slate-700">${todo.length}</span> <span class="text-slate-400">pending</span></span>
+        <span><span class="font-bold text-emerald-600">${done.length}</span> <span class="text-slate-400">done</span></span>
+      </div>
+    </div>
+    ${!todo.length&&!done.length?`<div class="text-center py-14 text-slate-400"><div style="font-size:40px" class="mb-3">📋</div><div class="text-sm">No tasks yet — add your first one above</div></div>`:''}
+    ${todo.map(t=>taskCard(t)).join('')}
+    ${done.length?`<div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-5 mb-2">Completed (${done.length})</div>`:''}
+    ${done.map(t=>taskCard(t)).join('')}`;
+}
+function taskCard(t){
+  const pc=t.priority==='High'?'text-red-600 bg-red-50 border-red-200':t.priority==='Medium'?'text-amber-600 bg-amber-50 border-amber-200':'text-slate-500 bg-slate-50 border-slate-200';
+  return card(`
+    <div class="flex items-start gap-3">
+      <input type="checkbox" ${t.done?'checked':''} onchange="togTask('${t.id}')"
+        class="mt-1 w-4 h-4 rounded accent-emerald-600 cursor-pointer flex-shrink-0">
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium mb-1 ${t.done?'line-through text-slate-400':'text-slate-800'}">${t.title}</div>
+        <div class="flex flex-wrap gap-1.5 items-center">
+          ${badge(t.subject)}
+          <span class="text-xs px-1.5 py-0.5 rounded-md border font-semibold ${pc}">${t.priority}</span>
+          ${t.due?`<span class="text-xs text-slate-400">📅 ${t.due}</span>`:''}
+          ${t.note?`<span class="text-xs text-slate-400 italic">${t.note}</span>`:''}
+        </div>
+      </div>
+      <button onclick="delTask('${t.id}')" class="text-slate-300 hover:text-red-500 flex-shrink-0 transition text-xl leading-none">×</button>
+    </div>`);
+}
+function addTask(){
+  const v=document.getElementById('ti').value.trim();if(!v)return;
+  S.tasks.push({id:uid(),title:v,subject:document.getElementById('ts').value,
+    priority:document.getElementById('tp').value,due:document.getElementById('td').value,
+    note:document.getElementById('tn').value.trim(),done:false});
+  save();document.getElementById('ti').value='';document.getElementById('tn').value='';rTasks();
+}
+function togTask(id){const t=S.tasks.find(t=>t.id===id);if(t){t.done=!t.done;save();rTasks();}}
+function delTask(id){if(!confirm('Delete this task?'))return;S.tasks=S.tasks.filter(t=>t.id!==id);save();rTasks();}
+
+// ═══════════════════════════════════════════
+//  PLANNER
+// ═══════════════════════════════════════════
+function rPlanner(){
+  document.getElementById('panel-planner').innerHTML=`
+    ${secTitle('Weekly Study Planner')}
+    <div class="grid grid-cols-7 gap-1.5 mb-4">
+      ${DAYS.map(d=>{
+        const bl=S.planner[d]||[];
+        return `<div>
+          <div class="text-xs font-semibold text-center text-slate-500 mb-1.5">${d}</div>
+          <div class="bg-white border rounded-xl p-1.5 min-h-20 cursor-pointer hover:border-emerald-300 transition ${selDay===d?'border-emerald-400 bg-emerald-50/40':'border-slate-200'}" onclick="openDay('${d}')">
+            ${bl.map(b=>{const s=gs(b.subject);return `<div class="text-xs rounded-lg px-1.5 py-0.5 mb-1 truncate font-medium" style="background:${s.bg};color:${s.col}">${b.time} ${b.note||s.label}</div>`}).join('')}
+            ${!bl.length?`<div class="text-slate-300 text-center mt-2 text-lg">+</div>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div id="day-form">${selDay?dayForm():''}</div>`;
+}
+function dayForm(){
+  const bl=S.planner[selDay]||[];
+  return card(`
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-semibold text-slate-700 text-sm">📅 ${selDay} — Study Blocks</h3>
+      <button onclick="selDay=null;rPlanner()" class="text-slate-400 hover:text-slate-700 text-xl">×</button>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+      <div><label class="text-xs text-slate-500 mb-1 block">Subject</label><select id="bs" class="${inp()}">${sopts()}</select></div>
+      <div><label class="text-xs text-slate-500 mb-1 block">Time</label><input type="time" id="bt" value="09:00" class="${inp()}"></div>
+      <div class="sm:col-span-2"><label class="text-xs text-slate-500 mb-1 block">Topic</label>
+        <div class="flex gap-2"><input type="text" id="bn" placeholder="e.g. RNA-seq pipeline" class="${inp()}" onkeydown="if(event.key==='Enter')addBlock()">
+        <button onclick="addBlock()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Add</button></div></div>
+    </div>
+    ${bl.length?`<div class="border-t border-slate-100 pt-3 space-y-2">
+      ${bl.map((b,i)=>`<div class="flex items-center gap-2 text-sm">
+        ${badge(b.subject)}<span class="mono text-xs text-slate-400">${b.time}</span>
+        <span class="flex-1">${b.note||''}</span>
+        <button onclick="delBlock(${i})" class="text-slate-300 hover:text-red-500 text-xl">×</button></div>`).join('')}
+    </div>`:''}
+  `,'border-emerald-200 bg-emerald-50/20');
+}
+function openDay(d){selDay=d;rPlanner();}
+function addBlock(){
+  if(!selDay)return;if(!S.planner[selDay])S.planner[selDay]=[];
+  S.planner[selDay].push({subject:document.getElementById('bs').value,time:document.getElementById('bt').value,note:document.getElementById('bn').value.trim()});
+  S.planner[selDay].sort((a,b)=>a.time.localeCompare(b.time));
+  save();rPlanner();
+}
+function delBlock(i){S.planner[selDay].splice(i,1);save();rPlanner();}
+
+// ═══════════════════════════════════════════
+//  POMODORO
+// ═══════════════════════════════════════════
+function beep(){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=528;g.gain.value=0.3;o.start();setTimeout(()=>{g.gain.setTargetAtTime(0,c.currentTime,0.15);setTimeout(()=>c.close(),500)},300)}catch(e){}}
+function rPomodoro(){
+  const p=S.pomo,m=Math.floor(p.rem/60).toString().padStart(2,'0'),s=(p.rem%60).toString().padStart(2,'0');
+  const tot=(p.mode==='work'?p.work:p.brk)*60;
+  const off=(CIRC*(p.rem/tot)).toFixed(1);
+  const mc=p.mode==='work'?'#10b981':'#8b5cf6';
+  const modeLabel=p.mode==='work'?'🎯 Focus Session':'☕ Short Break';
+  document.getElementById('panel-pomodoro').innerHTML=`
+    <div class="max-w-sm mx-auto">
+      ${secTitle('Pomodoro Timer')}
+      <div class="text-center mb-6">
+        <div class="relative mx-auto" style="width:220px;height:220px">
+          <svg viewBox="0 0 200 200" class="w-full h-full" style="transform:rotate(-90deg)">
+            <circle cx="100" cy="100" r="84" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+            <circle cx="100" cy="100" r="84" fill="none" stroke="${mc}" stroke-width="14"
+              stroke-dasharray="${CIRC.toFixed(1)}" stroke-dashoffset="${off}" stroke-linecap="round"
+              style="transition:stroke-dashoffset 0.6s ease,stroke 0.4s"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="mono font-bold text-slate-800" style="font-size:42px;letter-spacing:-2px;line-height:1">${m}:${s}</div>
+            <div class="text-sm text-slate-500 mt-1 font-medium">${modeLabel}</div>
+          </div>
+        </div>
+        <div class="flex justify-center gap-3 mt-5">
+          <button onclick="togTimer()" class="px-7 py-2.5 rounded-xl text-sm font-semibold transition ${p.running?'bg-slate-200 hover:bg-slate-300 text-slate-700':'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'}">${p.running?'⏸ Pause':'▶ Start'}</button>
+          <button onclick="rstTimer()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm text-slate-600 transition">↺ Reset</button>
+          <button onclick="skipPhase()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm text-slate-600 transition">⏭ Skip</button>
+        </div>
+      </div>
+      ${card(`
+        <div class="text-sm font-semibold text-slate-600 mb-3">⚙ Timer Settings</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="text-xs text-slate-500 mb-1 block">Focus (min)</label>
+            <input type="number" id="pw" min="1" max="90" value="${p.work}" class="${inp()}" onchange="updPomo()"></div>
+          <div><label class="text-xs text-slate-500 mb-1 block">Break (min)</label>
+            <input type="number" id="pb" min="1" max="30" value="${p.brk}" class="${inp()}" onchange="updPomo()"></div>
+        </div>`)}
+      <div class="text-center mt-4 py-4 bg-white rounded-2xl border border-slate-200">
+        <div class="text-xs text-slate-500 mb-1 uppercase tracking-wide font-semibold">Sessions today</div>
+        <div class="font-bold" style="font-size:48px;color:${mc};line-height:1">${p.sessions}</div>
+      </div>
+    </div>`;
+}
+function togTimer(){const p=S.pomo;if(p.running){clearInterval(tmr);p.running=false;}else{p.running=true;tmr=setInterval(()=>{p.rem--;if(p.rem<=0){beep();if(p.mode==='work'){p.sessions++;p.mode='break';}else p.mode='work';p.rem=(p.mode==='work'?p.work:p.brk)*60;save();}rPomodoro();},1000);}rPomodoro();}
+function rstTimer(){clearInterval(tmr);const p=S.pomo;p.running=false;p.mode='work';p.rem=p.work*60;save();rPomodoro();}
+function skipPhase(){clearInterval(tmr);const p=S.pomo;p.running=false;if(p.mode==='work'){p.sessions++;p.mode='break';}else p.mode='work';p.rem=(p.mode==='work'?p.work:p.brk)*60;save();rPomodoro();}
+function updPomo(){clearInterval(tmr);const p=S.pomo;p.running=false;p.work=parseInt(document.getElementById('pw').value)||25;p.brk=parseInt(document.getElementById('pb').value)||5;p.mode='work';p.rem=p.work*60;save();rPomodoro();}
+
+// ═══════════════════════════════════════════
+//  HABITS
+// ═══════════════════════════════════════════
+function calcStreak(hid,dates,today){
+  let n=0;
+  for(let i=6;i>=0;i--){if(dates[i]>today)continue;if(S.compl[hid]?.[dates[i]])n++;else break;}
+  return n;
+}
+function rHabits(){
+  const dates=wkDates(),today=new Date().toISOString().slice(0,10);
+  document.getElementById('panel-habits').innerHTML=`
+    ${secTitle('Habit Tracker',S.habits.length+' habits')}
+    ${card(`
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="sm:col-span-1"><label class="text-xs text-slate-500 mb-1 block">Habit name</label>
+          <input type="text" id="hi" placeholder="e.g. Biopython 30 min" class="${inp()}" onkeydown="if(event.key==='Enter')addHabit()"></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Subject</label>
+          <select id="hs" class="${inp()}">${sopts()}</select></div>
+        <div class="flex items-end">
+          <button onclick="addHabit()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition">+ Add Habit</button>
+        </div>
+      </div>`,'border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white')}
+    ${!S.habits.length?`<div class="text-center py-14 text-slate-400"><div style="font-size:40px" class="mb-3">📊</div><div class="text-sm">No habits yet — track your daily study consistency</div></div>`:`
+    <div class="overflow-x-auto">
+      <div style="min-width:520px">
+        <div class="grid gap-2 mb-3" style="grid-template-columns:180px repeat(7,1fr)">
+          <div></div>
+          ${DAYS.map((d,i)=>`<div class="text-center">
+            <div class="text-xs font-bold text-slate-600">${d}</div>
+            <div class="mono text-xs text-slate-400">${dates[i].slice(5)}</div>
+          </div>`).join('')}
+        </div>
+        ${S.habits.map(h=>{
+          const s=gs(h.subject), streak=calcStreak(h.id,dates,today);
+          return `<div class="grid gap-2 mb-4 items-center" style="grid-template-columns:180px repeat(7,1fr)">
+            <div class="pr-2">
+              <div class="text-sm font-semibold text-slate-700 truncate">${h.name}</div>
+              <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                ${badge(h.subject)}
+                ${streak>0?`<span class="text-xs font-bold text-amber-500">🔥 ${streak} day${streak>1?'s':''}</span>`:''}
+                <button onclick="delHabit('${h.id}')" class="text-slate-300 hover:text-red-500 text-base transition ml-auto">×</button>
+              </div>
+            </div>
+            ${dates.map(date=>{
+              const done=!!(S.compl[h.id]?.[date]);
+              const future=date>today;
+              return `<div class="flex justify-center">
+                <button
+                  onclick="${future?'':(`togHabit('${h.id}','${date}')`)}"
+                  ${future?'disabled':''}
+                  class="w-8 h-8 rounded-full border-2 transition flex items-center justify-center ${future?'opacity-20 cursor-not-allowed':''}"
+                  style="${done?`background:${s.bg};border-color:${s.col}`:'border-color:#e2e8f0'}">
+                  ${done?`<svg width="13" height="13" viewBox="0 0 13 13"><polyline points="2,7 5.5,10 11,3" fill="none" stroke="${s.col}" stroke-width="2.5" stroke-linecap="round"/></svg>`:''}
+                </button>
+              </div>`;
+            }).join('')}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`}`;
+}
+function addHabit(){const n=document.getElementById('hi').value.trim();if(!n)return;S.habits.push({id:uid(),name:n,subject:document.getElementById('hs').value});save();document.getElementById('hi').value='';rHabits();}
+function delHabit(id){if(!confirm('Delete habit?'))return;S.habits=S.habits.filter(h=>h.id!==id);delete S.compl[id];save();rHabits();}
+function togHabit(hid,date){if(!S.compl[hid])S.compl[hid]={};S.compl[hid][date]=!S.compl[hid][date];save();rHabits();}
+
+// ═══════════════════════════════════════════
+//  BOOKS
+// ═══════════════════════════════════════════
+function rBooks(){
+  let books=S.books;
+  if(bookSF)books=books.filter(b=>b.status===bookSF);
+  if(bookGF)books=books.filter(b=>b.genre===bookGF);
+  const rdg=S.books.filter(b=>b.status==='reading').length,dn=S.books.filter(b=>b.status==='done').length;
+  document.getElementById('panel-books').innerHTML=`
+    ${secTitle('Book Reading Tracker',S.books.length+' books')}
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      ${[['📖 Reading','#059669','#ecfdf5','#d1fae5',rdg],['✅ Done','#16a34a','#f0fdf4','#bbf7d0',dn],['📚 Total','#475569','#f8fafc','#e2e8f0',S.books.length]].map(([l,c,bg,bc,n])=>`
+        <div class="rounded-2xl p-4 text-center border-2" style="background:${bg};border-color:${bc}">
+          <div class="text-xs font-bold uppercase tracking-wide mb-1" style="color:${c}">${l}</div>
+          <div class="text-3xl font-bold" style="color:${c}">${n}</div>
+        </div>`).join('')}
+    </div>
+    ${card(`
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div><label class="text-xs text-slate-500 mb-1 block">Title *</label>
+          <input type="text" id="bti" placeholder="Book title" class="${inp()}"></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Author</label>
+          <input type="text" id="bau" placeholder="Author name" class="${inp()}"></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Genre</label>
+          <select id="bgn" class="${inp()}"><option value="">Select genre</option>${BOOK_GENRES.map(g=>`<option>${g}</option>`).join('')}</select></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Subject tag</label>
+          <select id="bsj" class="${inp()}">${sopts('bio')}</select></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Total pages</label>
+          <input type="number" id="bpg" placeholder="e.g. 320" min="0" class="${inp()}"></div>
+        <div class="flex items-end">
+          <button onclick="addBook()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition">+ Add Book</button>
+        </div>
+      </div>`,'border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white')}
+    <div class="flex flex-wrap gap-2 mb-4">
+      <select class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white" onchange="bookSF=this.value;rBooks()">
+        <option value="">All statuses</option>
+        ${BOOK_STATUS.map(b=>`<option value="${b.id}"${b.id===bookSF?' selected':''}>${b.label}</option>`).join('')}
+      </select>
+      <select class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white" onchange="bookGF=this.value;rBooks()">
+        <option value="">All genres</option>${BOOK_GENRES.map(g=>`<option value="${g}"${g===bookGF?' selected':''}>${g}</option>`).join('')}
+      </select>
+    </div>
+    ${!books.length?`<div class="text-center py-14 text-slate-400"><div style="font-size:40px" class="mb-3">📚</div><div class="text-sm">No books here — start tracking your reading</div></div>`:''}
+    ${books.map(b=>bookCard(b)).join('')}`;
+}
+function bookCard(bk){
+  const s=gs(bk.subject),bs=BOOK_STATUS.find(b=>b.id===bk.status)||BOOK_STATUS[0];
+  const pct=bk.pagesTotal>0?Math.round(bk.pagesRead/bk.pagesTotal*100):0;
+  const ed=editBook===bk.id;
+  return card(`
+    <div class="flex items-start gap-3 mb-3">
+      <div style="font-size:32px;flex-shrink:0">📖</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-slate-800 text-base">${bk.title}</div>
+        <div class="text-sm text-slate-500 mb-2">${bk.author||'Unknown author'}</div>
+        <div class="flex flex-wrap gap-1.5">
+          ${badge(bk.subject)}
+          ${bk.genre?`<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600 border border-slate-200">📂 ${bk.genre}</span>`:''}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border" style="background:${bs.bg};color:${bs.col};border-color:${bs.col}33">${bs.label}</span>
+          ${bk.rating?`<span class="text-sm text-amber-400">${'★'.repeat(bk.rating)}${'☆'.repeat(5-bk.rating)}</span>`:''}
+        </div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="editBook=editBook==='${bk.id}'?null:'${bk.id}';rBooks()" class="text-xs border border-slate-200 hover:bg-slate-50 px-2.5 py-1 rounded-lg text-slate-600 transition">✏ Update</button>
+        <button onclick="delBook('${bk.id}')" class="text-xs border border-red-100 hover:bg-red-50 px-2.5 py-1 rounded-lg text-red-500 transition">× Delete</button>
+      </div>
+    </div>
+    ${bk.pagesTotal?`
+      <div class="mb-2">
+        <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+          <span class="mono">${bk.pagesRead} / ${bk.pagesTotal} pages</span>
+          <span class="font-bold text-emerald-600">${pct}%</span>
+        </div>
+        <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full rounded-full progress-bar" style="width:${pct}%;background:linear-gradient(90deg,#10b981,#059669)"></div>
+        </div>
+      </div>`:''}
+    ${bk.notes?`<div class="mt-2 text-xs italic text-slate-500 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">💡 ${bk.notes}</div>`:''}
+    ${ed?`<div class="border-t border-slate-100 mt-3 pt-3">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div><label class="text-xs text-slate-500 mb-1 block">Pages read</label>
+          <input type="number" min="0" max="${bk.pagesTotal||999999}" value="${bk.pagesRead}" id="epr" class="${inp()}"></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Status</label>
+          <select id="est" class="${inp()}">${BOOK_STATUS.map(b=>`<option value="${b.id}"${b.id===bk.status?' selected':''}>${b.label}</option>`).join('')}</select></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Rating</label>
+          <select id="ert" class="${inp()}"><option value="0">No rating</option>${[1,2,3,4,5].map(n=>`<option value="${n}"${n===bk.rating?' selected':''}>${n} ★</option>`).join('')}</select></div>
+        <div><label class="text-xs text-slate-500 mb-1 block">Notes / insights</label>
+          <div class="flex gap-2"><input type="text" id="ent" value="${bk.notes||''}" placeholder="Key takeaways..." class="${inp()}">
+          <button onclick="saveBook('${bk.id}')" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap">Save</button></div></div>
+      </div>
+    </div>`:''}
+  `);
+}
+function addBook(){
+  const title=document.getElementById('bti').value.trim();if(!title)return;
+  S.books.push({id:uid(),title,author:document.getElementById('bau').value.trim(),genre:document.getElementById('bgn').value,
+    subject:document.getElementById('bsj').value,pagesTotal:parseInt(document.getElementById('bpg').value)||0,
+    pagesRead:0,status:'to-read',rating:0,notes:''});
+  save();document.getElementById('bti').value='';document.getElementById('bau').value='';rBooks();
+}
+function saveBook(id){
+  const b=S.books.find(b=>b.id===id);if(!b)return;
+  b.pagesRead=parseInt(document.getElementById('epr').value)||0;
+  b.status=document.getElementById('est').value;
+  b.rating=parseInt(document.getElementById('ert').value)||0;
+  b.notes=document.getElementById('ent').value.trim();
+  editBook=null;save();rBooks();
+}
+function delBook(id){if(!confirm('Delete this book?'))return;S.books=S.books.filter(b=>b.id!==id);save();rBooks();}
+
+// ═══════════════════════════════════════════
+//  TOPIC TRACKERS (Bioinfo / AI-ML / DS)
+// ═══════════════════════════════════════════
+function rTopics(tab){
+  const cfg=TOPIC_CFG[tab], st=S[cfg.sKey], cats=S[cfg.tKey];
+  const total=cats.reduce((s,c)=>s+c.topics.length,0);
+  const prof=Object.values(st).filter(v=>v==='proficient').length;
+  const lrn=Object.values(st).filter(v=>v==='learning').length;
+  const pct=total>0?Math.round(prof/total*100):0;
+
+  document.getElementById('panel-'+tab).innerHTML=`
+    <div class="flex items-center gap-2 mb-4">
+      <span style="font-size:26px">${cfg.emoji}</span>
+      <div>
+        <h2 class="font-bold text-slate-700">${cfg.label} Topic Tracker</h2>
+        <p class="text-xs text-slate-400">Click dot to cycle: not started → learning → proficient</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      ${[['Proficient','#059669','#ecfdf5','#d1fae5',prof],['Learning','#d97706','#fffbeb','#fde68a',lrn],['Not Started','#64748b','#f8fafc','#e2e8f0',total-prof-lrn]].map(([l,c,bg,bc,n])=>`
+        <div class="rounded-2xl p-3 text-center border-2" style="background:${bg};border-color:${bc}">
+          <div class="mono text-xs font-bold uppercase tracking-wide mb-1" style="color:${c}">${l}</div>
+          <div class="text-2xl font-bold" style="color:${c}">${n}</div>
+        </div>`).join('')}
+    </div>
+    <div class="mb-5">
+      <div class="flex justify-between text-xs mb-1.5">
+        <span class="text-slate-500">${prof} / ${total} topics proficient</span>
+        <span class="font-bold" style="color:${cfg.col}">${pct}% complete</span>
+      </div>
+      <div class="h-3 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full rounded-full progress-bar" style="width:${pct}%;background:linear-gradient(90deg,${cfg.col},${cfg.col}cc)"></div>
+      </div>
+    </div>
+    ${cats.map((cat,ci)=>topicCatCard(tab,cat,ci,cfg,st)).join('')}
+    ${card(`
+      <p class="text-sm font-semibold text-slate-600 mb-3">+ Add new category</p>
+      <div class="flex gap-2">
+        <input type="text" id="nc-${tab}" placeholder="Category name..." class="${inp()}" onkeydown="if(event.key==='Enter')addCat('${tab}')">
+        <button onclick="addCat('${tab}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap">Add</button>
+      </div>
+    `,'border-dashed border-2 border-slate-200 bg-slate-50/50')}`;
+}
+
+function topicCatCard(tab,cat,ci,cfg,st){
+  const catProf=cat.topics.filter((_,ti)=>(st[ci+'_'+ti]||'ns')==='proficient').length;
+  const isCustom=ci>=cfg.defCount;
+  return card(`
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-bold text-slate-700">${cat.cat}</span>
+        <span class="mono text-xs text-slate-400">[${catProf}/${cat.topics.length}]</span>
+      </div>
+      ${isCustom?`<button onclick="delCat('${tab}',${ci})" class="text-xs text-red-400 hover:text-red-600 border border-red-100 px-2 py-0.5 rounded-lg transition">Delete cat</button>`:''}
+    </div>
+    <div class="space-y-1 mb-3">
+      ${cat.topics.map((topic,ti)=>{
+        const key=ci+'_'+ti, st2=st[key]||'ns';
+        const dot={ns:{bg:'transparent',border:'#cbd5e1',ic:'',lbl:'not started',lc:'#94a3b8'},
+          learning:{bg:'#f59e0b',border:'#f59e0b',ic:'◑',lbl:'learning',lc:'#d97706'},
+          proficient:{bg:cfg.col,border:cfg.col,ic:'✓',lbl:'proficient',lc:cfg.col}}[st2];
+        return `<div class="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-50 transition group">
+          <button onclick="cycleTopic('${tab}',${ci},${ti})"
+            class="topic-dot w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-white font-bold"
+            style="background:${dot.bg};border-color:${dot.border};font-size:10px" title="Click to cycle status">
+            ${dot.ic}
+          </button>
+          <span class="flex-1 text-sm ${st2==='proficient'?'text-slate-400 line-through':st2==='learning'?'text-slate-700 font-medium':'text-slate-600'}">${topic}</span>
+          <span class="mono text-xs font-medium" style="color:${dot.lc}">${dot.lbl}</span>
+          <button onclick="delTopic('${tab}',${ci},${ti})" class="text-slate-200 hover:text-red-400 transition text-xl leading-none opacity-0 group-hover:opacity-100">×</button>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="flex gap-2 pt-2 border-t border-slate-100">
+      <input type="text" id="nt-${tab}-${ci}" placeholder="Add topic to this category..." class="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white focus:border-emerald-400 transition" onkeydown="if(event.key==='Enter')addTopic('${tab}',${ci})">
+      <button onclick="addTopic('${tab}',${ci})" class="text-xs border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition font-medium">+ Add</button>
+    </div>
+  `);
+}
+
+function cycleTopic(tab,ci,ti){
+  const k=ci+'_'+ti,cur=S[TOPIC_CFG[tab].sKey][k]||'ns';
+  S[TOPIC_CFG[tab].sKey][k]=cur==='ns'?'learning':cur==='learning'?'proficient':'ns';
+  save();rTopics(tab);
+}
+function addTopic(tab,ci){
+  const el=document.getElementById(`nt-${tab}-${ci}`);
+  const v=el.value.trim();if(!v)return;
+  S[TOPIC_CFG[tab].tKey][ci].topics.push(v);
+  save();el.value='';rTopics(tab);
+}
+function delTopic(tab,ci,ti){
+  if(!confirm('Remove this topic?'))return;
+  const sKey=TOPIC_CFG[tab].sKey, cats=S[TOPIC_CFG[tab].tKey];
+  cats[ci].topics.splice(ti,1);
+  const newSt={};
+  Object.entries(S[sKey]).forEach(([k,v])=>{
+    const [c,t]=k.split('_').map(Number);
+    if(c===ci){if(t<ti)newSt[k]=v;else if(t>ti)newSt[`${c}_${t-1}`]=v;}
+    else newSt[k]=v;
+  });
+  S[sKey]=newSt;save();rTopics(tab);
+}
+function addCat(tab){
+  const el=document.getElementById(`nc-${tab}`);
+  const v=el.value.trim();if(!v)return;
+  S[TOPIC_CFG[tab].tKey].push({cat:v,topics:[]});
+  save();el.value='';rTopics(tab);
+}
+function delCat(tab,ci){
+  if(!confirm('Delete this entire category and all its topics?'))return;
+  const sKey=TOPIC_CFG[tab].sKey;
+  S[TOPIC_CFG[tab].tKey].splice(ci,1);
+  const newSt={};
+  Object.entries(S[sKey]).forEach(([k,v])=>{
+    const [c,t]=k.split('_').map(Number);
+    if(c<ci)newSt[k]=v;
+    else if(c>ci)newSt[`${c-1}_${t}`]=v;
+  });
+  S[sKey]=newSt;save();rTopics(tab);
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+if (SCRIPT_URL !== 'YOUR_GOOGLE_WEB_APP_URL_HERE') {
+  // If the cloud link is set, load from the cloud!
+  loadCloudState();
+} else {
+  // If no cloud link, fallback to local storage
+  S = loadLocalState();
+  sw('tasks');
+}
+</script>
+</body>
+</html>
