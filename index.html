@@ -526,7 +526,7 @@ function rPomodoro(){
           </div>
         </div>
         <div class="flex justify-center gap-3 mt-5">
-          <button onclick="togTimer()" class="px-7 py-2.5 rounded-xl text-sm font-semibold transition ${p.running?'bg-slate-200 hover:bg-slate-300 text-slate-700':'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'}">${p.running?'⏸ Pause':'▶ Start'}</button>
+          <button onclick="requestNotif(); togTimer()" class="px-7 py-2.5 rounded-xl text-sm font-semibold transition ${p.running?'bg-slate-200 hover:bg-slate-300 text-slate-700':'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'}">${p.running?'⏸ Pause':'▶ Start'}</button>
           <button onclick="rstTimer()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm text-slate-600 transition">↺ Reset</button>
           <button onclick="skipPhase()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm text-slate-600 transition">⏭ Skip</button>
         </div>
@@ -545,11 +545,47 @@ function rPomodoro(){
       </div>
     </div>`;
 }
-function togTimer(){const p=S.pomo;if(p.running){clearInterval(tmr);p.running=false;}else{p.running=true;tmr=setInterval(()=>{p.rem--;if(p.rem<=0){beep();if(p.mode==='work'){p.sessions++;p.mode='break';}else p.mode='work';p.rem=(p.mode==='work'?p.work:p.brk)*60;save();}rPomodoro();},1000);}rPomodoro();}
+// Ask for browser permission
+function requestNotif() {
+  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
+}
+// Send the actual pop-up
+function sendNotif(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body: body, icon: "🧬" });
+  }
+}
+
+function togTimer(){
+  const p=S.pomo;
+  if(p.running){
+    clearInterval(tmr);p.running=false;
+  } else {
+    p.running=true;
+    tmr=setInterval(()=>{
+      p.rem--;
+      if(p.rem<=0){
+        beep();
+        if(p.mode==='work'){
+          sendNotif("🎯 Focus Complete!", "Great job! Time to take a 5-minute break.");
+          p.sessions++; p.mode='break';
+        } else {
+          sendNotif("☕ Break Over!", "Time to get back to your code.");
+          p.mode='work';
+        }
+        p.rem=(p.mode==='work'?p.work:p.brk)*60;
+        save();
+      }
+      rPomodoro();
+    },1000);
+  }
+  rPomodoro();
+}
 function rstTimer(){clearInterval(tmr);const p=S.pomo;p.running=false;p.mode='work';p.rem=p.work*60;save();rPomodoro();}
 function skipPhase(){clearInterval(tmr);const p=S.pomo;p.running=false;if(p.mode==='work'){p.sessions++;p.mode='break';}else p.mode='work';p.rem=(p.mode==='work'?p.work:p.brk)*60;save();rPomodoro();}
 function updPomo(){clearInterval(tmr);const p=S.pomo;p.running=false;p.work=parseInt(document.getElementById('pw').value)||25;p.brk=parseInt(document.getElementById('pb').value)||5;p.mode='work';p.rem=p.work*60;save();rPomodoro();}
-
 // ═══════════════════════════════════════════
 //  HABITS
 // ═══════════════════════════════════════════
